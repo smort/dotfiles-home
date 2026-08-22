@@ -1,0 +1,9 @@
+[user]
+    email = 5253577+smort@users.noreply.github.com
+    name = smort
+[init]
+    defaultBranch = main
+[pull]
+    rebase = true
+[core]
+    pager = hunk pager

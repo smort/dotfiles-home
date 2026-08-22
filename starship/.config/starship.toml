@@ -1,0 +1,26 @@
+[cmd_duration]
+format = '\\[[⏱ $duration]($style)\\]'
+
+[git_branch]
+format = '\\[[$symbol$branch]($style)\\]'
+
+[git_status]
+format = '([\\[$all_status$ahead_behind\\]]($style))'
+
+[nodejs]
+format = '\\[[$symbol($version)]($style)\\]'
+
+[python]
+format = '\\[[$symbol$version(\\($virtualenv\\))]($style)\\]'
+
+[golang]
+format = '\\[[$symbol($version)]($style)\\]'
+
+[java]
+format = '\\[[$symbol($version)]($style)\\]'
+
+[rust]
+format = '\\[[$symbol($version)]($style)\\]'
+
+[time]
+disabled = true
