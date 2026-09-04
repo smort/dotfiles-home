@@ -19,16 +19,67 @@ Pi, Zed, npm registry configuration, AWS, Kubernetes, Jira, Salesforce, and work
 
 See [SETUP.md](SETUP.md) for first-time installation and ongoing maintenance instructions.
 
-## Bootstrap from scratch
+## Fresh WSL2 setup
 
-From WSL2 Ubuntu:
+Install the small system prerequisite set first. `zsh` and `git` come from apt; user-facing development tools come from mise.
 
 ```bash
+sudo apt-get update
+sudo apt-get install --yes git zsh stow curl build-essential ca-certificates unzip xz-utils socat
+```
+
+Clone this repo:
+
+```bash
+git clone https://github.com/smort/dotfiles-home.git ~/.dotfiles
 cd ~/.dotfiles
+```
+
+Run the bootstrap:
+
+```bash
 ./bootstrap/bootstrap.sh
 ```
 
-The script is safe to rerun. It installs apt prerequisites, creates/refreshes Stow symlinks, installs mise if needed, and runs `mise install`.
+The script is safe to rerun. It refreshes Stow symlinks, installs mise if needed, installs tools from `mise/.config/mise/config.toml`, and installs/updates Antidote for Zsh plugins.
+
+Make apt Zsh your login shell, then restart the terminal:
+
+```bash
+chsh -s /usr/bin/zsh
+```
+
+After opening a fresh terminal, verify:
+
+```bash
+echo "$SHELL"
+ps -p $$ -o comm=
+command -v mise pi codex gh starship lazygit
+```
+
+Set up GitHub HTTPS credentials with GitHub CLI so future `git fetch`/`git push` commands work without SSH keys:
+
+```bash
+gh auth login
+```
+
+Recommended answers:
+
+- GitHub.com
+- HTTPS
+- Authenticate Git with your GitHub credentials: Yes
+- Login with a web browser
+
+Verify:
+
+```bash
+gh auth status
+cd ~/.dotfiles
+git fetch
+git status
+```
+
+## Bootstrap helpers
 
 Run individual stages when needed:
 
