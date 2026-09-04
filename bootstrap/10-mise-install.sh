@@ -22,3 +22,14 @@ if [[ ! -f "$MISE_CONFIG" ]]; then
 fi
 
 mise install --yes
+
+# Antidote is a small Zsh plugin manager used for optional shell niceties such
+# as syntax highlighting. Keep it outside brew/mise package management so this
+# setup does not depend on Homebrew.
+ANTIDOTE_DIR="$HOME/.local/share/antidote"
+if [[ ! -d "$ANTIDOTE_DIR/.git" ]]; then
+  rm -rf "$ANTIDOTE_DIR"
+  git clone --depth=1 https://github.com/mattmc3/antidote.git "$ANTIDOTE_DIR"
+else
+  git -C "$ANTIDOTE_DIR" pull --ff-only
+fi

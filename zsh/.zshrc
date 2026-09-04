@@ -4,7 +4,7 @@
 # Linuxbrew/Homebrew even if it is inherited from the parent environment.
 path=("${(@)path:#/home/linuxbrew/.linuxbrew/bin}")
 path=("${(@)path:#/home/linuxbrew/.linuxbrew/sbin}")
-path=("$HOME/.local/bin" $path)
+path=("$HOME/.local/bin" "$HOME/.local/share/mise/shims" $path)
 typeset -U path
 
 # mise manages global/project tool versions from ~/.config/mise/config.toml.
@@ -56,6 +56,7 @@ fi
 
 # Plugins are optional. Load them last so syntax highlighting sees the final
 # PATH, aliases, functions, completions, and prompt setup.
+rehash
 for ANTIDOTE_ZSH in \
     "$HOME/.local/share/antidote/antidote.zsh" \
     "$HOME/.antidote/antidote.zsh" \
