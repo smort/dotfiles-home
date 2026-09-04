@@ -1,4 +1,5 @@
 # fzf shell integration. fzf is installed by mise when configured.
-if command -v fzf >/dev/null 2>&1; then
+# Only source keybindings/completions in an interactive terminal with ZLE.
+if [[ -o interactive && -t 0 && -t 1 ]] && command -v fzf >/dev/null 2>&1; then
     source <(fzf --zsh)
 fi

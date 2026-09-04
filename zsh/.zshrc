@@ -1,30 +1,16 @@
 # Home Zsh configuration for WSL2 Ubuntu + Warp.
 
-# Keep user-installed commands available, including mise itself.
+# Keep user-installed commands available, including mise itself. Do not prefer
+# Linuxbrew/Homebrew even if it is inherited from the parent environment.
+path=("${(@)path:#/home/linuxbrew/.linuxbrew/bin}")
+path=("${(@)path:#/home/linuxbrew/.linuxbrew/sbin}")
 path=("$HOME/.local/bin" $path)
+typeset -U path
 
 # mise manages global/project tool versions from ~/.config/mise/config.toml.
 if command -v mise >/dev/null 2>&1; then
     eval "$(mise activate zsh)"
 fi
-
-# Plugins are optional. Antidote is loaded when present, but Homebrew is not
-# required by this dotfiles setup.
-for ANTIDOTE_ZSH in \
-    "$HOME/.local/share/antidote/antidote.zsh" \
-    "$HOME/.antidote/antidote.zsh" \
-    /usr/share/zsh-antidote/antidote.zsh; do
-    if [[ -f "$ANTIDOTE_ZSH" ]]; then
-        source "$ANTIDOTE_ZSH"
-        ZSH_PLUGINS_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh_plugins.zsh"
-        if [[ ! -f "$ZSH_PLUGINS_CACHE" || "$HOME/.zsh_plugins.txt" -nt "$ZSH_PLUGINS_CACHE" ]]; then
-            mkdir -p "$(dirname "$ZSH_PLUGINS_CACHE")"
-            antidote bundle < "$HOME/.zsh_plugins.txt" > "$ZSH_PLUGINS_CACHE"
-        fi
-        source "$ZSH_PLUGINS_CACHE"
-        break
-    fi
-done
 
 # Completion and history.
 autoload -Uz compinit && compinit
@@ -67,3 +53,21 @@ alias python='python3'
 if [[ "${DOTFILES_USE_STARSHIP:-1}" == "1" ]] && command -v starship >/dev/null 2>&1; then
     eval "$(starship init zsh)"
 fi
+
+# Plugins are optional. Load them last so syntax highlighting sees the final
+# PATH, aliases, functions, completions, and prompt setup.
+for ANTIDOTE_ZSH in \
+    "$HOME/.local/share/antidote/antidote.zsh" \
+    "$HOME/.antidote/antidote.zsh" \
+    /usr/share/zsh-antidote/antidote.zsh; do
+    if [[ -f "$ANTIDOTE_ZSH" ]]; then
+        source "$ANTIDOTE_ZSH"
+        ZSH_PLUGINS_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh_plugins.zsh"
+        if [[ ! -f "$ZSH_PLUGINS_CACHE" || "$HOME/.zsh_plugins.txt" -nt "$ZSH_PLUGINS_CACHE" ]]; then
+            mkdir -p "$(dirname "$ZSH_PLUGINS_CACHE")"
+            antidote bundle < "$HOME/.zsh_plugins.txt" > "$ZSH_PLUGINS_CACHE"
+        fi
+        source "$ZSH_PLUGINS_CACHE"
+        break
+    fi
+done
