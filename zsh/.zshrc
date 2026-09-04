@@ -13,18 +13,21 @@ if command -v mise >/dev/null 2>&1; then
 fi
 
 # Completion and history.
-autoload -Uz compinit && compinit
+ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+mkdir -p "$ZSH_CACHE_DIR"
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={a-zA-Z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-setopt NO_BANG_HIST INC_APPEND_HISTORY SHARE_HISTORY HIST_IGNORE_DUPS HIST_IGNORE_SPACE HIST_VERIFY
+autoload -Uz compinit && compinit -d "$ZSH_CACHE_DIR/zcompdump-$ZSH_VERSION"
+HISTFILE="${ZDOTDIR:-$HOME}/.zsh_history"
 HISTSIZE=50000
 SAVEHIST=50000
+setopt NO_BANG_HIST INC_APPEND_HISTORY SHARE_HISTORY HIST_IGNORE_DUPS HIST_IGNORE_SPACE HIST_VERIFY
 
 # Optional modern CLI replacements.
 if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh --cmd cd)"
 fi
-if command -v fzf >/dev/null 2>&1; then
+if [[ -r "$HOME/.fzf.zsh" ]] && command -v fzf >/dev/null 2>&1; then
     source "$HOME/.fzf.zsh"
 fi
 
