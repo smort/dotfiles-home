@@ -1,21 +1,19 @@
 # Home Zsh configuration for WSL2 Ubuntu + Warp.
 
-# Keep user-installed commands available.
+# Keep user-installed commands available, including mise itself.
 path=("$HOME/.local/bin" $path)
 
-# Homebrew (Linuxbrew) is optional; add it when installed.
-if command -v brew >/dev/null 2>&1; then
-    eval "$(brew shellenv)"
-fi
-
-# mise manages language/tool versions declared by a project.
+# mise manages global/project tool versions from ~/.config/mise/config.toml.
 if command -v mise >/dev/null 2>&1; then
     eval "$(mise activate zsh)"
 fi
 
-# Plugins are managed by Antidote when installed with Homebrew.
-if command -v brew >/dev/null 2>&1; then
-    ANTIDOTE_ZSH="$(brew --prefix antidote 2>/dev/null)/share/antidote/antidote.zsh"
+# Plugins are optional. Antidote is loaded when present, but Homebrew is not
+# required by this dotfiles setup.
+for ANTIDOTE_ZSH in \
+    "$HOME/.local/share/antidote/antidote.zsh" \
+    "$HOME/.antidote/antidote.zsh" \
+    /usr/share/zsh-antidote/antidote.zsh; do
     if [[ -f "$ANTIDOTE_ZSH" ]]; then
         source "$ANTIDOTE_ZSH"
         ZSH_PLUGINS_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh_plugins.zsh"
@@ -24,8 +22,9 @@ if command -v brew >/dev/null 2>&1; then
             antidote bundle < "$HOME/.zsh_plugins.txt" > "$ZSH_PLUGINS_CACHE"
         fi
         source "$ZSH_PLUGINS_CACHE"
+        break
     fi
-fi
+done
 
 # Completion and history.
 autoload -Uz compinit && compinit

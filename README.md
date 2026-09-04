@@ -1,58 +1,49 @@
 # Home dotfiles
 
-WSL2 Ubuntu dotfiles managed with GNU Stow.
+WSL2 Ubuntu dotfiles managed with GNU Stow. Tool versions are managed by mise.
 
 ## Packages
 
+Stow packages:
+
 - `git`
 - `lazygit`
+- `mise`
 - `ssh`
 - `starship`
 - `zsh`
 
+User-facing CLIs and runtimes live in `mise/.config/mise/config.toml`. Homebrew/Brewfile is intentionally not used; where possible, mise installs tools from its registry/aqua backends.
+
 Pi, Zed, npm registry configuration, AWS, Kubernetes, Jira, Salesforce, and work-specific integrations are intentionally excluded.
 
 See [SETUP.md](SETUP.md) for first-time installation and ongoing maintenance instructions.
-
-## Prerequisites
-
-Install Linuxbrew/Homebrew manually first. It is the source of truth for user-facing development tools:
-
-- https://brew.sh
-
-The bootstrap scripts install only these Ubuntu/apt prerequisites:
-
-- `stow`
-- `curl`
-- `build-essential`
-- `ca-certificates`
-- `unzip`
 
 ## Bootstrap from scratch
 
 From WSL2 Ubuntu:
 
 ```bash
-cd ~/src/dotfiles-home
+cd ~/.dotfiles
 ./bootstrap/bootstrap.sh
 ```
 
-The script is safe to rerun. It installs apt prerequisites, installs the curated `Brewfile`, and creates/refreshes Stow symlinks.
+The script is safe to rerun. It installs apt prerequisites, creates/refreshes Stow symlinks, installs mise if needed, and runs `mise install`.
 
 Run individual stages when needed:
 
 ```bash
 ./bootstrap/00-apt.sh
-./bootstrap/10-brew-bundle.sh
 ./bootstrap/20-stow.sh
+./bootstrap/10-mise-install.sh
 ```
 
 Or skip stages:
 
 ```bash
 ./bootstrap/bootstrap.sh --skip-apt
-./bootstrap/bootstrap.sh --skip-brew
 ./bootstrap/bootstrap.sh --skip-stow
+./bootstrap/bootstrap.sh --skip-mise
 ```
 
 ## Tracking installed tools
@@ -60,10 +51,15 @@ Or skip stages:
 Check whether the machine matches the manifest:
 
 ```bash
-brew bundle check --file="$HOME/src/dotfiles-home/Brewfile"
+mise ls --current
+mise outdated
 ```
 
-After intentionally adding or removing tools, edit `Brewfile` and commit it. Avoid blindly dumping the entire machine with `brew bundle dump`; that can include transitive dependencies and unrelated experiments.
+After intentionally adding or removing tools, edit `mise/.config/mise/config.toml` and rerun:
+
+```bash
+mise install
+```
 
 ## Warp and Zsh
 
@@ -73,4 +69,4 @@ Warp can provide its own prompt. Starship remains enabled by default; disable it
 export DOTFILES_USE_STARSHIP=0
 ```
 
-The Zsh configuration still handles aliases, environment setup, mise, completion, plugins, and optional tools such as fzf, zoxide, eza, and bat.
+The Zsh configuration handles aliases, environment setup, mise, completion, and optional tools such as fzf, zoxide, eza, and bat.

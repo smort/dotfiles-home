@@ -15,8 +15,12 @@ fi
 
 "${APT[@]}" update
 "${APT[@]}" install --yes \
+  git \
+  zsh \
   stow \
   curl \
   build-essential \
   ca-certificates \
-  unzip
+  unzip \
+  xz-utils \
+  socat

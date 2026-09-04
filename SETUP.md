@@ -2,27 +2,14 @@
 
 These instructions assume a fresh WSL2 Ubuntu environment and a private GitHub repository.
 
-## 1. Install Linuxbrew
-
-Install Homebrew/Linuxbrew manually from:
-
-<https://brew.sh>
-
-Restart the WSL shell afterward and verify:
+## 1. Install apt prerequisites
 
 ```bash
-brew --version
+sudo apt-get update
+sudo apt-get install --yes git zsh stow curl build-essential ca-certificates unzip xz-utils socat
 ```
 
-## 2. Install Git
-
-Git is managed by Homebrew in this setup, but it is needed before cloning this repository:
-
-```bash
-brew install git
-```
-
-## 3. Create an SSH key
+## 2. Create an SSH key
 
 Create a personal GitHub key inside WSL2:
 
@@ -52,43 +39,34 @@ cat ~/.ssh/id_personal_ed25519.pub
 
 Add it to **GitHub → Settings → SSH and GPG keys**.
 
-Test it:
+## 3. Clone the repository
 
 ```bash
-ssh -T -i ~/.ssh/id_personal_ed25519 \
-  -o IdentitiesOnly=yes git@github.com
-```
-
-## 4. Clone the repository
-
-The repository's SSH config is not installed until after cloning, so use the key explicitly for the first clone:
-
-```bash
-mkdir -p ~/src
-
+mkdir -p ~
 GIT_SSH_COMMAND="ssh -i ~/.ssh/id_personal_ed25519 -o IdentitiesOnly=yes" \
   git clone git@github.com:YOUR_GITHUB_USER/YOUR_REPOSITORY.git \
-  ~/src/dotfiles-home
+  ~/.dotfiles
 ```
 
 Replace the repository URL with the actual GitHub URL.
 
-## 5. Run the bootstrap
+## 4. Run the bootstrap
 
 ```bash
-cd ~/src/dotfiles-home
+cd ~/.dotfiles
 ./bootstrap/bootstrap.sh
 ```
 
 This installs:
 
-- The small apt prerequisite set
-- Everything listed in `Brewfile`
-- Stow links for Git, Lazygit, SSH, Starship, and Zsh
+- The apt prerequisite set
+- Stow links for Git, Lazygit, mise, SSH, Starship, and Zsh
+- mise itself, if needed
+- Everything listed in `mise/.config/mise/config.toml`
 
 The bootstrap is safe to rerun.
 
-## 6. Verify the setup
+## 5. Verify the setup
 
 Open a new shell, then check:
 
@@ -97,11 +75,13 @@ command -v zsh
 command -v mise
 command -v starship
 command -v lazygit
+command -v pi
+command -v codex
 
 ssh -T git@github-second
 
 git config --global --list
-brew bundle check --file="$HOME/src/dotfiles-home/Brewfile"
+mise ls --current
 ```
 
 The `github-second` SSH alias is installed by the `ssh` Stow package and uses `~/.ssh/id_personal_ed25519`.
@@ -120,26 +100,25 @@ If this should be permanent, add it to your local shell environment rather than 
 
 ### Add or remove tools
 
-Edit `Brewfile`, then install the declared packages:
+Edit `mise/.config/mise/config.toml`, then install the declared packages:
 
 ```bash
-brew bundle --file="$HOME/src/dotfiles-home/Brewfile"
+mise install
 ```
 
-Check whether the machine matches the manifest:
+Check current and outdated tools:
 
 ```bash
-brew bundle check --file="$HOME/src/dotfiles-home/Brewfile"
+mise ls --current
+mise outdated
 ```
-
-Do not routinely use `brew bundle dump --force`; it can add transitive dependencies and unrelated experiments. Maintain the Brewfile as a curated list.
 
 ### Update dotfiles
 
 Because Stow creates symlinks, normal edits to these files are already edits to the repository:
 
 ```bash
-cd ~/src/dotfiles-home
+cd ~/.dotfiles
 git status
 git diff
 ```
@@ -150,18 +129,6 @@ After adding a new package or changing layout, refresh the links:
 ./bootstrap/20-stow.sh
 ```
 
-### Update Homebrew packages
-
-Occasionally update Homebrew and declared packages:
-
-```bash
-brew update
-brew bundle --file="$HOME/src/dotfiles-home/Brewfile"
-brew upgrade
-```
-
-Review changes before committing any updates to the repository.
-
 ### Update Zsh plugins
 
 Plugins are listed in:
@@ -170,7 +137,7 @@ Plugins are listed in:
 zsh/.zsh_plugins.txt
 ```
 
-After changing that file, restart Zsh or open a new terminal. Antidote rebuilds its cached plugin bundle automatically.
+Antidote is optional and loaded only if installed separately.
 
 ### SSH maintenance
 

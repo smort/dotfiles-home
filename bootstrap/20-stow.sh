@@ -10,4 +10,4 @@ if ! command -v stow >/dev/null 2>&1; then
 fi
 
 cd "$REPO_DIR"
-stow --restow git lazygit ssh starship zsh
+stow --restow git lazygit ssh starship zsh mise
