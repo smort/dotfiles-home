@@ -1,0 +1,5 @@
+pre-commit:
+  commands:
+    gitleaks:
+      run: mise exec -- gitleaks git --staged --no-banner --redact
+      fail_text: "Potential secret detected. Remove it or explicitly document an approved false positive."

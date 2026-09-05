@@ -1,74 +1,27 @@
 # First-time setup
 
-These instructions assume a fresh WSL2 Ubuntu environment and a private GitHub repository.
+These instructions provision a fresh WSL2 Ubuntu environment from this public repository. Mise clones the repository to `~/.dotfiles`, applies dotfiles, installs the declared system and development packages, installs Antidote, and sets Zsh as the login shell.
 
-## 1. Install apt prerequisites
+## 1. Install mise
 
-```bash
-sudo apt-get update
-sudo apt-get install --yes git zsh stow curl build-essential ca-certificates unzip xz-utils socat
-```
-
-## 2. Create an SSH key
-
-Create a personal GitHub key inside WSL2:
+Mise must be installed once before it can run its own bootstrap configuration:
 
 ```bash
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-
-ssh-keygen -t ed25519 \
-  -C "your-email@example.com" \
-  -f ~/.ssh/id_personal_ed25519
+curl https://mise.run | sh
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
-Never commit the private key to the repository.
+Optionally add `~/.local/bin` to the current shell PATH before continuing if your shell setup does not already do so.
 
-Start an agent and add the key for the current shell:
+## 2. Bootstrap the machine
 
 ```bash
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_personal_ed25519
+mise bootstrap --from https://github.com/smort/dotfiles-home.git --yes
 ```
 
-Copy the public key:
+This public checkout requires no GitHub credentials. Mise may ask for your `sudo` password to install apt packages and set the login shell to `/bin/zsh`.
 
-```bash
-cat ~/.ssh/id_personal_ed25519.pub
-```
-
-Add it to **GitHub → Settings → SSH and GPG keys**.
-
-## 3. Clone the repository
-
-```bash
-mkdir -p ~
-GIT_SSH_COMMAND="ssh -i ~/.ssh/id_personal_ed25519 -o IdentitiesOnly=yes" \
-  git clone git@github.com:YOUR_GITHUB_USER/YOUR_REPOSITORY.git \
-  ~/.dotfiles
-```
-
-Replace the repository URL with the actual GitHub URL.
-
-## 4. Run the bootstrap
-
-```bash
-cd ~/.dotfiles
-./bootstrap/bootstrap.sh
-```
-
-This installs:
-
-- The apt prerequisite set
-- Stow links for Git, Lazygit, mise, SSH, Starship, and Zsh
-- mise itself, if needed
-- Everything listed in `mise/.config/mise/config.toml`
-
-The bootstrap is safe to rerun.
-
-## 5. Verify the setup
-
-Open a new shell, then check:
+Open a new terminal, then verify:
 
 ```bash
 command -v zsh
@@ -77,45 +30,38 @@ command -v starship
 command -v lazygit
 command -v pi
 command -v codex
-
-ssh -T git@github-second
-
-git config --global --list
-mise ls --current
+mise bootstrap status --missing
 ```
 
-The `github-second` SSH alias is installed by the `ssh` Stow package and uses `~/.ssh/id_personal_ed25519`.
+## 3. Authenticate GitHub CLI when needed
 
-## Warp
-
-Warp can provide its own prompt. To use Warp's prompt instead of Starship:
+GitHub CLI authentication is deliberately separate from bootstrap because it is interactive:
 
 ```bash
-export DOTFILES_USE_STARSHIP=0
+gh auth login
+gh auth status
 ```
-
-If this should be permanent, add it to your local shell environment rather than committing machine-specific preferences immediately.
 
 ## Ongoing maintenance
 
-### Add or remove tools
-
-Edit `mise/.config/mise/config.toml`, then install the declared packages:
+Update the configuration and reconcile the machine:
 
 ```bash
-mise install
+cd ~/.dotfiles
+git pull --ff-only
+mise bootstrap --yes
 ```
 
-Check current and outdated tools:
+Preview changes before applying them:
 
 ```bash
-mise ls --current
-mise outdated
+mise bootstrap --dry-run
+mise bootstrap dotfiles diff
 ```
 
-### Update dotfiles
+## Dotfile behavior
 
-Because Stow creates symlinks, normal edits to these files are already edits to the repository:
+Mise creates symlinks, so changes to managed dotfiles are changes in `~/.dotfiles`:
 
 ```bash
 cd ~/.dotfiles
@@ -123,44 +69,12 @@ git status
 git diff
 ```
 
-After adding a new package or changing layout, refresh the links:
+Mise refuses to overwrite conflicting local files by default. Inspect the conflict, preserve anything needed, and rerun with `mise bootstrap --force-dotfiles --yes` only when replacement is intentional.
+
+## Warp
+
+Warp can provide its own prompt. To use Warp's prompt instead of Starship:
 
 ```bash
-./bootstrap/20-stow.sh
-```
-
-### Update Zsh plugins
-
-Plugins are listed in:
-
-```text
-zsh/.zsh_plugins.txt
-```
-
-Antidote is optional and loaded only if installed separately.
-
-### SSH maintenance
-
-List loaded keys:
-
-```bash
-ssh-add -l
-```
-
-Add the key again after starting a new agent:
-
-```bash
-ssh-add ~/.ssh/id_personal_ed25519
-```
-
-Rotate the key if it is ever exposed. Keep private keys, agent files, and credentials outside the repository.
-
-### Before committing
-
-Check for accidental secrets or machine-specific values:
-
-```bash
-git diff --check
-git status
-rg -n -i 'token|secret|password|private|/mnt/c/|/Users/|CHG|company' .
+export DOTFILES_USE_STARSHIP=0
 ```

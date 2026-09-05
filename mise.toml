@@ -1,0 +1,63 @@
+[settings]
+dotfiles.root = "~/.dotfiles"
+dotfiles.default_mode = "symlink"
+system_packages.managers = ["apt"]
+
+[bootstrap.packages]
+"apt:git" = "latest"
+"apt:zsh" = "latest"
+"apt:curl" = "latest"
+"apt:build-essential" = "latest"
+"apt:ca-certificates" = "latest"
+"apt:unzip" = "latest"
+"apt:xz-utils" = "latest"
+"apt:socat" = "latest"
+
+[bootstrap.repos]
+"~/.dotfiles" = { url = "https://github.com/smort/dotfiles-home.git", ref = "main" }
+"~/.local/share/antidote" = { url = "https://github.com/mattmc3/antidote.git", ref = "main" }
+
+[bootstrap.user]
+login_shell = "/bin/zsh"
+
+[dotfiles]
+"~/.gitconfig" = { source = "~/.dotfiles/git/.gitconfig" }
+"~/.config/lazygit/config.yml" = { source = "~/.dotfiles/lazygit/.config/lazygit/config.yml" }
+"~/.config/mise/config.toml" = { source = "~/.dotfiles/mise.toml" }
+"~/.ssh/config" = { source = "~/.dotfiles/ssh/.ssh/config" }
+"~/.config/starship.toml" = { source = "~/.dotfiles/starship/.config/starship.toml" }
+"~/.fzf.zsh" = { source = "~/.dotfiles/zsh/.fzf.zsh" }
+"~/.zsh_plugins.txt" = { source = "~/.dotfiles/zsh/.zsh_plugins.txt" }
+"~/.zshrc" = { source = "~/.dotfiles/zsh/.zshrc" }
+
+[tools]
+# --- Core runtimes and package managers (native mise backends) ---
+node = "lts"
+go = "latest"
+python = "latest"
+zig = "latest"
+pnpm = "latest"
+uv = "latest"
+
+# --- npm-installed CLIs ---
+"npm:@openai/codex" = "latest"
+"npm:@earendil-works/pi-coding-agent" = "latest"
+
+# --- User-facing CLIs (mise registry/aqua backends; no Brewfile) ---
+bat = "latest"
+eza = "latest"
+fd = "latest"
+fzf = "latest"
+gh = "latest"
+jq = "latest"
+lazygit = "latest"
+ripgrep = "latest"
+starship = "latest"
+zoxide = "latest"
+hunk = "latest"
+herdr = "latest"
+gitleaks = "latest"
+lefthook = "latest"
+
+[tasks.bootstrap]
+run = "cd \"$HOME/.dotfiles\" && mise exec -- lefthook install"

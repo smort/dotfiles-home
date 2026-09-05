@@ -7,3 +7,5 @@
     rebase = true
 [core]
     pager = hunk pager
+[include]
+    path = ~/.gitconfig.local

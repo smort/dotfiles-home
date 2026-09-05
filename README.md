@@ -1,115 +1,91 @@
 # Home dotfiles
 
-WSL2 Ubuntu dotfiles managed with GNU Stow. Tool versions are managed by mise.
+WSL2 Ubuntu dotfiles and workstation dependencies managed with [mise](https://mise.jdx.dev/). The repository is public and is checked out to `~/.dotfiles` by mise bootstrap.
 
-## Packages
+## What mise manages
 
-Stow packages:
+- Ubuntu system packages: Git, Zsh, curl, build tools, CA certificates, unzip, xz-utils, and socat
+- This repository at `~/.dotfiles`
+- Antidote at `~/.local/share/antidote`
+- Dotfile symlinks for Git, Lazygit, mise, SSH, Starship, and Zsh
+- Zsh as the login shell
+- Development tools and CLIs declared in [`mise.toml`](mise.toml), including Hunk, Herdr, Gitleaks, and Lefthook
+- A Lefthook pre-commit secret scan using Gitleaks
 
-- `git`
-- `lazygit`
-- `mise`
-- `ssh`
-- `starship`
-- `zsh`
-
-User-facing CLIs and runtimes live in `mise/.config/mise/config.toml`. Homebrew/Brewfile is intentionally not used; where possible, mise installs tools from its registry/aqua backends.
-
-Pi, Zed, npm registry configuration, AWS, Kubernetes, Jira, Salesforce, and work-specific integrations are intentionally excluded.
-
-See [SETUP.md](SETUP.md) for first-time installation and ongoing maintenance instructions.
+GNU Stow is no longer used.
 
 ## Fresh WSL2 setup
 
-Install the small system prerequisite set first. `zsh` and `git` come from apt; user-facing development tools come from mise.
+Install mise once, then let it provision the machine. The initial installer must run outside mise because mise has to exist before it can bootstrap itself.
 
 ```bash
-sudo apt-get update
-sudo apt-get install --yes git zsh stow curl build-essential ca-certificates unzip xz-utils socat
+curl https://mise.run | sh
+export PATH="$HOME/.local/bin:$PATH"
+
+mise bootstrap --from https://github.com/smort/dotfiles-home.git --yes
 ```
 
-Clone this repo:
+The bootstrap process may prompt for your `sudo` password while installing apt packages and configuring the login shell. Start a new terminal when it completes.
 
-```bash
-git clone https://github.com/smort/dotfiles-home.git ~/.dotfiles
-cd ~/.dotfiles
-```
-
-Run the bootstrap:
-
-```bash
-./bootstrap/bootstrap.sh
-```
-
-The script is safe to rerun. It refreshes Stow symlinks, installs mise if needed, installs tools from `mise/.config/mise/config.toml`, and installs/updates Antidote for Zsh plugins.
-
-Make apt Zsh your login shell, then restart the terminal:
-
-```bash
-chsh -s /usr/bin/zsh
-```
-
-After opening a fresh terminal, verify:
+Verify:
 
 ```bash
 echo "$SHELL"
 ps -p $$ -o comm=
 command -v mise pi codex gh starship lazygit
+mise bootstrap status --missing
 ```
 
-Set up GitHub HTTPS credentials with GitHub CLI so future `git fetch`/`git push` commands work without SSH keys:
+## Local machine overlays
+
+Keep machine-specific or sensitive settings out of this public repository:
+
+- Put Git identity overrides, signing configuration, or work-only settings in `~/.gitconfig.local`.
+- Put private SSH hosts, identity-file paths, and work-only settings in `~/.ssh/config.local`.
+
+The tracked Git and SSH configs include those files when they exist. They are ignored if accidentally created inside this repository.
+
+## GitHub authentication
+
+The repository checkout requires no authentication. Authenticate GitHub CLI separately when you need to interact with GitHub:
 
 ```bash
 gh auth login
-```
-
-Recommended answers:
-
-- GitHub.com
-- HTTPS
-- Authenticate Git with your GitHub credentials: Yes
-- Login with a web browser
-
-Verify:
-
-```bash
 gh auth status
+```
+
+Choose the authentication method appropriate for the machine; this flow is intentionally not part of bootstrap because it requires interactive user input.
+
+## Ongoing maintenance
+
+From the checked-out repository:
+
+```bash
 cd ~/.dotfiles
-git fetch
-git status
+git pull --ff-only
+mise bootstrap --yes
 ```
 
-## Bootstrap helpers
-
-Run individual stages when needed:
+Preview or inspect changes without modifying files:
 
 ```bash
-./bootstrap/00-apt.sh
-./bootstrap/20-stow.sh
-./bootstrap/10-mise-install.sh
+mise bootstrap --dry-run
+mise bootstrap status --missing
+mise bootstrap dotfiles diff
 ```
 
-Or skip stages:
+## Git hooks
 
-```bash
-./bootstrap/bootstrap.sh --skip-apt
-./bootstrap/bootstrap.sh --skip-stow
-./bootstrap/bootstrap.sh --skip-mise
-```
+Bootstrap installs the repository's Lefthook hook. Before each commit, Gitleaks scans staged content for likely secrets. Do not bypass it; remove secrets from the change instead.
 
 ## Tracking installed tools
 
-Check whether the machine matches the manifest:
-
-```bash
-mise ls --current
-mise outdated
-```
-
-After intentionally adding or removing tools, edit `mise/.config/mise/config.toml` and rerun:
+Tools are declared in [`mise.toml`](mise.toml). After intentionally changing the tool list, run:
 
 ```bash
 mise install
+mise ls --current
+mise outdated
 ```
 
 ## Warp and Zsh

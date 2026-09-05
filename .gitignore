@@ -1,2 +1,7 @@
 .env
+.env.*
 .DS_Store
+
+# Machine-specific overlays; never commit credentials or host-specific settings.
+git/.gitconfig.local
+ssh/.ssh/config.local
